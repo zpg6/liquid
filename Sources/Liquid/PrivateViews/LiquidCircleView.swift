@@ -26,16 +26,37 @@ struct LiquidCircleView: View {
     }
     
     var body: some View {
-        LiquidCircle(radians: radians)
-            .animation(.linear(duration: period))
-            .onAppear {
-                self.radians = AnimatableArray(LiquidCircleView.generateRadial(self.samples))
-                
-                self.startTimer()
+        
+        ZStack {
+            if case let LiquidShapeStyle.stroke(color,lineWidth) = style {
+                LiquidCircle(radians: radians)
+                    .stroke(color, lineWidth: lineWidth)
+                    .animation(.linear(duration: period))
+                    .onAppear {
+                        self.radians = AnimatableArray(LiquidCircleView.generateRadial(self.samples))
+                        
+                        self.startTimer()
+                    }
+                    .onDisappear {
+                        self.stopTimer()
+                    }
             }
-            .onDisappear {
-                self.stopTimer()
+            else if case let LiquidShapeStyle.fill(color) = style {
+                LiquidCircle(radians: radians)
+                    .fill(color)
+                    .animation(.linear(duration: period))
+                    .onAppear {
+                        self.radians = AnimatableArray(LiquidCircleView.generateRadial(self.samples))
+                        
+                        self.startTimer()
+                    }
+                    .onDisappear {
+                        self.stopTimer()
+                    }
             }
+        }
+        
+        
     }
     
     static func generateRadial(_ count: Int = 6) -> [Double] {
