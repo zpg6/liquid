@@ -14,12 +14,14 @@ struct LiquidCircleView: View {
     @State var trigger: Timer.TimerPublisher?
     @State var cancellable: Cancellable?
     let period: TimeInterval
+    
+    let style: LiquidShapeStyle
 
-    init(samples: Int, period: TimeInterval) {
+    init(style: LiquidShapeStyle, samples: Int, period: TimeInterval) {
         self._samples = .init(initialValue: samples)
         self._radians = .init(initialValue: AnimatableArray(LiquidCircleView.generateRadial(samples)))
         self.period = period
-        
+        self.style = style
         startTimer()
     }
     
