@@ -17,10 +17,14 @@ struct LiquidPathView: View {
     @State var samples: Int
     let period: TimeInterval
     let trigger: Timer.TimerPublisher
+    let style: LiquidPathStyle
+    
+    
 
     var cancellable: Cancellable?
 
-    init(path: CGPath, interpolate: Int, samples: Int, period: TimeInterval) {
+    init(path: CGPath, style: LiquidPathStyle, interpolate: Int, samples: Int, period: TimeInterval) {
+        self.style = style
         self._samples = .init(initialValue: samples)
         self.period = period
         self.trigger = Timer.TimerPublisher(interval: period, runLoop: .main, mode: .common)
@@ -35,14 +39,37 @@ struct LiquidPathView: View {
     }
     
     var body: some View {
-        LiquidPath(x: x, y: y)
-            .animation(.linear(duration: period))
-            .onReceive(trigger) { _ in
-                self.generate()
-            }.onAppear {
-                self.generate()
-            }.onDisappear {
-                self.cancellable?.cancel()
+        ZStack {
+            if case let LiquidPathStyle.stroke(color,lineWidth) = style {
+                LiquidPath(x: x, y: y)
+                    .stroke(color, lineWidth: lineWidth)
+                    .animation(.linear(duration: period))
+                    .onReceive(trigger) { _ in
+                        self.generate()
+                    }.onAppear {
+                        self.generate()
+                    }.onDisappear {
+                        self.cancellable?.cancel()
+                    }
             }
+            else if case let LiquidPathStyle.fill(color) = style {
+                LiquidPath(x: x, y: y)
+                    .fill(color)
+                    .animation(.linear(duration: period))
+                    .onReceive(trigger) { _ in
+                        self.generate()
+                    }.onAppear {
+                        self.generate()
+                    }.onDisappear {
+                        self.cancellable?.cancel()
+                    }
+            }
+        }
     }
+}
+
+
+public enum LiquidPathStyle {
+    case stroke(color: Color, lineWidth: CGFloat)
+    case fill(color: Color)
 }
